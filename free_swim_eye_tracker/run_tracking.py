@@ -1,4 +1,5 @@
 import json
+import warnings
 from pathlib import Path
 from free_swim_eye_tracker.utils.io import ask_filename, get_file
 from free_swim_eye_tracker.utils.config import config_suffix
@@ -15,7 +16,12 @@ def run_tracking(path=None):
     if Path(path).exists():
         with open(path, 'r') as f:
             config = json.load(f)
-            track_video(**config)
+            try:
+                track_video(**config)
+            except Exception as e:
+                warnings.warn(f'Error encountered while processing {path}:' + str(e))
+    else:
+        warnings.warn(path + ' has not been created. Run parameter selection first.')
 
 
 if __name__ == '__main__':

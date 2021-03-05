@@ -1,5 +1,4 @@
 import json
-import warnings
 from pathlib import Path
 from free_swim_eye_tracker.utils.io import ask_directory, ask_filenames
 from free_swim_eye_tracker.utils.config import config_suffix, angles_suffix, points_suffix
@@ -21,10 +20,7 @@ def run_tracking_on_videos(paths=None, skip_processed_videos=False):
             if Path(get_file(video_path, angles_suffix)).exists() and Path(get_file(video_path, points_suffix)).exists():
                 print(str(video_path), 'has already been processed.')
                 continue
-        try:
-            run_tracking(path)
-        except Exception as e:
-            warnings.warn(f'Error encountered while processing {path}:' + str(e))
+        run_tracking(path)
 
 
 def run_tracking_on_directory(directory=None, skip_processed_videos=False):
