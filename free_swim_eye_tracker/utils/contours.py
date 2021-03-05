@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import warnings
 from .geometry import ccw_angle_between_vectors
 
 
@@ -11,8 +12,9 @@ def sort_contours(contours):
     largest3 = sorted(contours, key=cv2.contourArea)[-3:]
 
     try:
-        assert len(contours) == 3
+        assert len(largest3) == 3
     except AssertionError:
+        warnings.warn('Less than 3 contours detected. Try changing the parameters.')
         return largest3
 
     centers = np.array([contour.mean(0)[0] for contour in largest3])
