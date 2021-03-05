@@ -1,3 +1,5 @@
+import math
+import warnings
 import cv2
 import numpy as np
 import pandas as pd
@@ -12,18 +14,54 @@ def ccw_angle_between_vectors(v1, v2):
     return np.arcsin(np.cross(v1, v2) / np.linalg.norm(v1, axis=-1) / np.linalg.norm(v2, axis=-1))
 
 
+def contour_centre(contour):
+    moments = cv2.moments(contour)
+    if moments['m00'] != 0:
+        c = moments['m10'] / moments['m00'], moments['m01'] / moments['m00']
+    else:
+        c = np.mean(contour.reshape(-1, 2), axis=0)
+    return c
+
+
+def contour_angle(contour):
+    moments = cv2.moments(contour)
+    try:
+        mu20 = moments['mu20'] / moments['m00']
+        mu02 = moments['mu02'] / moments['m00']
+        mu11 = moments['mu11'] / moments['m00']
+    except ZeroDivisionError:
+        return 0
+    if (mu20 - mu02) != 0:
+        theta = 0.5 * math.atan(2 * mu11 / (mu20 - mu02))
+    else:
+        theta = math.pi / 2
+    return theta
+
+
+def fit_ellipse(contour, use_convex_hull):
+    if use_convex_hull:
+        contour = cv2.convexHull(contour)
+
+    cnt = contour.reshape(-1, 2) * 1.
+    
+    model = EllipseModel()
+
+    try:
+        assert model.estimate(cnt)
+        return model.params
+    except AssertionError:
+        warnings.warn()
+        cx, cy = contour_centre(contour)
+        angle = contour_angle(contour)
+        a = b = np.linalg.norm(cnt.max(0) - cnt.min(0))
+        return cx, cy, a, b, angle
+
+
 def fit_ellipses(contours, use_convex_hull):
     ellipse_params = np.zeros((len(contours), 5))
 
     for i, contour in enumerate(contours):
-        model = EllipseModel()
-        if use_convex_hull:
-            contour = cv2.convexHull(contour)
-        try:
-            assert model.estimate(contour.reshape(-1, 2) * 1.)
-        except AssertionError:
-            raise NotImplementedError
-        ellipse_params[i] = model.params
+        ellipse_params[i] = fit_ellipse(contour, use_convex_hull)
 
         if ellipse_params[i, 2] < ellipse_params[i, 3]:
             ellipse_params[i][[2, 3]] = ellipse_params[i][[3, 2]]
@@ -33,7 +71,11 @@ def fit_ellipses(contours, use_convex_hull):
 
 
 def correct_orientation(ellipse_params):
-    assert len(ellipse_params) == 3
+    try:
+        assert len(ellipse_params) == 3
+    except AssertionError:
+        return ellipse_params
+
     dx, dy = ellipse_params[:2, :2].mean(0) - ellipse_params[-1, :2]
     orientation = np.arctan2(dy, dx)
 

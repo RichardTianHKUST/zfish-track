@@ -18,7 +18,7 @@ def intermediate_tracking(img, method, params):
     thresh = segmentation(img, method, params)
     contours = find_contours(thresh)
     sorted_contours = sort_contours(contours)
-    ellipses = fit_ellipses(sorted_contours, use_convex_hull=False)
+    ellipses = fit_ellipses(sorted_contours, use_convex_hull=True)
     ellipses = correct_orientation(ellipses)
     eye_points = ellipse_points(ellipses)
     return sorted_contours, eye_points
