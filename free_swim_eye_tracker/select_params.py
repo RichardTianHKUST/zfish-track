@@ -67,8 +67,8 @@ class ParameterSelector:
         self.update()
 
     def image_func(self, img):
-        sorted_contours, ellipses = intermediate_tracking(img, self.method, self.params)
-        return draw_results(img, sorted_contours)
+        sorted_contours, eye_points = intermediate_tracking(img, self.method, self.params)
+        return draw_results(img, sorted_contours, eye_points)
 
     def update(self):
         img = self.image_func(self.frames[self.frame_pos])

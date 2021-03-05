@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 import pandas as pd
 from skimage.measure import EllipseModel
@@ -11,12 +12,17 @@ def ccw_angle_between_vectors(v1, v2):
     return np.arcsin(np.cross(v1, v2) / np.linalg.norm(v1, axis=-1) / np.linalg.norm(v2, axis=-1))
 
 
-def fit_ellipses(contours):
+def fit_ellipses(contours, use_convex_hull):
     ellipse_params = np.zeros((len(contours), 5))
 
     for i, contour in enumerate(contours):
         model = EllipseModel()
-        assert model.estimate(contour.reshape(-1, 2) * 1.)
+        if use_convex_hull:
+            contour = cv2.convexHull(contour)
+        try:
+            assert model.estimate(contour.reshape(-1, 2) * 1.)
+        except AssertionError:
+            raise NotImplementedError
         ellipse_params[i] = model.params
 
         if ellipse_params[i, 2] < ellipse_params[i, 3]:

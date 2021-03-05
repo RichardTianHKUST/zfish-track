@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from .geometry import calculate_angles, fit_ellipses, ellipse_points
+from .geometry import calculate_angles, fit_ellipses, ellipse_points, correct_orientation
 from .image_processing import imcrop, read_video, white_on_black
 from .io import get_file
 from .segmentation import segmentation
@@ -18,7 +18,8 @@ def intermediate_tracking(img, method, params):
     thresh = segmentation(img, method, params)
     contours = find_contours(thresh)
     sorted_contours = sort_contours(contours)
-    ellipses = fit_ellipses(sorted_contours)
+    ellipses = fit_ellipses(sorted_contours, use_convex_hull=False)
+    ellipses = correct_orientation(ellipses)
     eye_points = ellipse_points(ellipses)
     return sorted_contours, eye_points
 

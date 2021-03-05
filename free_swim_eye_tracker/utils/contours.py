@@ -9,6 +9,12 @@ def find_contours(img):
 
 def sort_contours(contours):
     largest3 = sorted(contours, key=cv2.contourArea)[-3:]
+
+    try:
+        assert len(contours) == 3
+    except AssertionError:
+        return largest3
+
     centers = np.array([contour.mean(0)[0] for contour in largest3])
     swim_bladder = int(np.argmin([np.linalg.norm(np.subtract(*centers[np.delete(np.arange(3), i)])) for i in range(3)]))
     eyes = np.delete(np.arange(3), swim_bladder)
