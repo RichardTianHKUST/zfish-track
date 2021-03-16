@@ -12,12 +12,12 @@ from free_swim_eye_tracker.utils.config import config_suffix
 class ParameterSelector:
     methods_params = {'binary': {'threshold': [173, 0, 255]}}
 
-    def __init__(self, video_path=None, roi: Union[bool, list] = True, method='binary', params=None):
+    def __init__(self, video_path=None, roi: Union[bool, list] = True, method='binary', params=None, interval=None):
         if video_path is None:
             video_path = ask_filename()
 
         self.video_path = str(video_path)
-        self.frames, self.roi = preprocess_video(video_path, roi)
+        self.frames, self.roi, self.interval = preprocess_video(video_path, roi, interval)
         self.method = method
         self.frame_pos = 0
         self.segmentation = segmentation
@@ -50,10 +50,14 @@ class ParameterSelector:
         cv2.destroyAllWindows()
 
         if key == key_enter:
-            config = {'video_path': Path(self.video_path).absolute().as_posix(),
-                      'roi': self.roi, 'method': self.method, 'params': self.params}
-            with open(get_file(self.video_path, config_suffix), 'w') as f:
-                json.dump(config, f)
+            self.save()
+
+    def save(self):
+        config = {'video_path': Path(self.video_path).absolute().as_posix(),
+                  'roi': self.roi, 'method': self.method, 'params': self.params, 'interval': self.interval}
+
+        with open(get_file(self.video_path, '_' + str(tuple(self.interval)) + config_suffix), 'w') as f:
+            json.dump(config, f)
 
     def create_track_bar_callback(self, track_bar_name):
         return lambda value: self.update_parameter(track_bar_name, value)
@@ -76,4 +80,4 @@ class ParameterSelector:
 
 
 if __name__ == '__main__':
-    ParameterSelector()
+    ParameterSelector(interval=(300, 700))
