@@ -13,7 +13,7 @@ def preprocess_video(video_path, roi, interval):
     frames = white_on_black(read_video(video_path, as_gray=True))
     try:
         interval = (0 if interval[0] is None else interval[0], len(frames) if interval[1] is None else interval[1])
-    except IndexError:
+    except TypeError:
         interval = (0, len(frames))
     frames = frames[interval[0]:interval[1]]
     frames, roi = imcrop(frames, roi)
