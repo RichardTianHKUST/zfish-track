@@ -50,7 +50,7 @@ def fit_ellipse(contour, use_convex_hull):
         assert model.estimate(cnt)
         return model.params
     except AssertionError:
-        warnings.warn('Failed tp fit ellipses')
+        warnings.warn('Failed to fit ellipses')
         cx, cy = contour_centre(contour)
         angle = contour_angle(contour)
         a = b = np.linalg.norm(cnt.max(0) - cnt.min(0))
