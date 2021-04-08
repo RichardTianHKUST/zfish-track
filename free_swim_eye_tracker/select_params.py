@@ -2,6 +2,7 @@ from typing import Union
 import json
 from pathlib import Path
 import cv2
+import numpy as np
 from free_swim_eye_tracker.utils.draw import draw_results
 from free_swim_eye_tracker.utils.io import ask_filename, get_file
 from free_swim_eye_tracker.utils.segmentation import segmentation
@@ -12,27 +13,33 @@ from free_swim_eye_tracker.utils.config import config_suffix
 class ParameterSelector:
     methods_params = {'binary': {'threshold': [173, 0, 255]}}
 
-    def __init__(self, video_path=None, roi: Union[bool, list] = True, method='binary', params=None, interval=None):
+    def __init__(self, video_path=None, roi: Union[bool, list] = True, method='binary', params=None, interval=None,
+                 skip_gui=False):
         if video_path is None:
             video_path = ask_filename()
 
         self.video_path = str(video_path)
-        self.frames, self.roi, self.interval = preprocess_video(video_path, roi, interval)
         self.method = method
         self.frame_pos = 0
         self.segmentation = segmentation
         self.window_name = 'Press Enter to save parameters'
+        self.roi = roi
+        self.interval = interval
+        self.params = {param: default for param, (default, _, _) in self.methods_params[self.method].items()}
+        if isinstance(params, dict):
+            self.params.update(params)
+
+        if skip_gui:
+            self.save()
+            return
+
+        self.frames, self.roi = preprocess_video(video_path, roi, interval)
 
         cv2.namedWindow(self.window_name)
 
         frame_bar_name = 'frame'
         cv2.createTrackbar(frame_bar_name, self.window_name, 0, len(self.frames) - 1, self.update_frame_bar)
         cv2.setTrackbarPos(frame_bar_name, self.window_name, self.frame_pos)
-
-        self.params = {param: default for param, (default, _, _) in self.methods_params[self.method].items()}
-
-        if isinstance(params, dict):
-            self.params.update(params)
 
         for param, (_, low, high) in self.methods_params[self.method].items():
             cv2.createTrackbar(param, self.window_name, low, high, self.create_track_bar_callback(param))
@@ -56,7 +63,11 @@ class ParameterSelector:
         config = {'video_path': Path(self.video_path).absolute().as_posix(),
                   'roi': self.roi, 'method': self.method, 'params': self.params, 'interval': self.interval}
 
-        with open(get_file(self.video_path, '_' + str(tuple(self.interval)) + config_suffix), 'w') as f:
+        file = get_file(self.video_path, '_' + str(tuple(self.interval)) + config_suffix) \
+            if isinstance(self.interval, (tuple, list, np.ndarray)) \
+            else get_file(self.video_path, config_suffix)
+
+        with open(file, 'w') as f:
             json.dump(config, f)
 
     def create_track_bar_callback(self, track_bar_name):

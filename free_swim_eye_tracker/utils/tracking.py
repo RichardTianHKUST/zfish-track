@@ -17,7 +17,7 @@ def preprocess_video(video_path, roi, interval):
         interval = (0, len(frames))
     frames = frames[interval[0]:interval[1]]
     frames, roi = imcrop(frames, roi)
-    return frames, roi, interval
+    return frames, roi
 
 
 def intermediate_tracking(img, method, params):
