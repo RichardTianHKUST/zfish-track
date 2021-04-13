@@ -1,8 +1,9 @@
 import json
 import warnings
+from argparse import ArgumentParser
 from pathlib import Path
 from glob import glob
-from free_swim_eye_tracker.utils.io import ask_filename, get_file
+from free_swim_eye_tracker.utils.io import ask_filename
 from free_swim_eye_tracker.utils.config import config_suffix
 from free_swim_eye_tracker.utils.tracking import track_video
 
@@ -29,4 +30,6 @@ def run_tracking(path=None):
 
 
 if __name__ == '__main__':
-    run_tracking()
+    parser = ArgumentParser()
+    parser.add_argument('path', nargs='?', help='video path', default=None)
+    run_tracking(**parser.parse_args().__dict__)

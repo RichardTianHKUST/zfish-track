@@ -1,4 +1,5 @@
 import json
+from argparse import ArgumentParser
 from pathlib import Path
 from free_swim_eye_tracker.utils.io import ask_directory, ask_filenames
 from free_swim_eye_tracker.utils.config import config_suffix, angles_suffix, points_suffix
@@ -23,13 +24,17 @@ def run_tracking_on_videos(paths=None, skip_processed_videos=False):
         run_tracking(path)
 
 
-def run_tracking_on_directory(directory=None, skip_processed_videos=False):
+def run_tracking_on_directory(directory=None, skip_processed_videos=False, recursive=False):
     if directory is None:
         directory = ask_directory()
-
-    paths = list(Path(directory).glob(f'*{config_suffix}'))
+    directory = Path(directory)
+    paths = list(directory.rglob(f'*{config_suffix}') if recursive else directory.glob(f'*{config_suffix}'))
     run_tracking_on_videos(paths, skip_processed_videos)
 
 
 if __name__ == '__main__':
-    run_tracking_on_directory()
+    parser = ArgumentParser()
+    parser.add_argument('directory', nargs='?', help="directory", default=None)
+    parser.add_argument('--skip-processed-videos', help="skip processed videos", action='store_true')
+    parser.add_argument('-r', '--recursive', help="search for files in the subdirectories", action='store_true')
+    run_tracking_on_directory(**vars(parser.parse_args()))

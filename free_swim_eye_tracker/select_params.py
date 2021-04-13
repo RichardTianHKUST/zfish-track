@@ -1,6 +1,7 @@
+from argparse import ArgumentParser
+from pathlib import Path
 from typing import Union
 import json
-from pathlib import Path
 import cv2
 import numpy as np
 from free_swim_eye_tracker.utils.draw import draw_results
@@ -91,4 +92,9 @@ class ParameterSelector:
 
 
 if __name__ == '__main__':
-    ParameterSelector(interval=(300, 700))
+    parser = ArgumentParser()
+    parser.add_argument('video_path', nargs='?', help="video path", default=None)
+    parser.add_argument('--roi', nargs='*', help="roi for cropping", default=True, type=int)
+    parser.add_argument('-m', '--method', help="tracking method", default='binary')
+    parser.add_argument('-i', '--interval', help="tracking method", default=None)
+    ParameterSelector(**(vars(parser.parse_args())))

@@ -31,7 +31,7 @@ def intermediate_tracking(img, method, params):
 
 
 def track_video(video_path, roi, method, params, interval=None):
-    frames, roi, interval = preprocess_video(video_path, roi=roi, interval=interval)
+    frames, roi = preprocess_video(video_path, roi=roi, interval=interval)
     eye_points = np.array([intermediate_tracking(frame, method, params)[1] for frame in frames]) + roi[:2]
     columns = pd.MultiIndex.from_product([['anterior', 'center', 'posterior'],
                                           ['left_eye', 'right_eye', 'swim_bladder'],
