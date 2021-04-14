@@ -9,8 +9,8 @@ from .config import points_suffix, angles_suffix
 from .contours import find_contours, sort_contours
 
 
-def preprocess_video(video_path, roi, interval):
-    frames = white_on_black(read_video(video_path, as_gray=True))
+def preprocess_video(video_path, roi, interval, verbose=0):
+    frames = white_on_black(read_video(video_path, as_gray=True, verbose=verbose))
     try:
         interval = (0 if interval[0] is None else interval[0], len(frames) if interval[1] is None else interval[1])
     except TypeError:
@@ -30,8 +30,8 @@ def intermediate_tracking(img, method, params):
     return sorted_contours, eye_points
 
 
-def track_video(video_path, roi, method, params, interval=None):
-    frames, roi = preprocess_video(video_path, roi=roi, interval=interval)
+def track_video(video_path, roi, method, params, interval=None, verbose=0):
+    frames, roi = preprocess_video(video_path, roi=roi, interval=interval, verbose=verbose)
     eye_points = np.array([intermediate_tracking(frame, method, params)[1] for frame in frames]) + roi[:2]
     columns = pd.MultiIndex.from_product([['anterior', 'center', 'posterior'],
                                           ['left_eye', 'right_eye', 'swim_bladder'],

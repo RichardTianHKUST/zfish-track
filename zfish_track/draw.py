@@ -5,8 +5,7 @@ from skimage.color import gray2rgb
 
 contour_colors = [(31, 119, 180),
                   (255, 127, 14),
-                  (44, 160, 44)
-                  ]
+                  (44, 160, 44)]
 
 
 def draw_results(src, contours=None, eye_points=None, contour_thickness=-1):

@@ -1,23 +1,25 @@
-from argparse import ArgumentParser
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 import json
 import cv2
 import numpy as np
-from free_swim_eye_tracker.utils.draw import draw_results
-from free_swim_eye_tracker.utils.io import ask_filename, get_file
-from free_swim_eye_tracker.utils.segmentation import segmentation
-from free_swim_eye_tracker.utils.tracking import intermediate_tracking, preprocess_video
-from free_swim_eye_tracker.utils.config import config_suffix
+from .draw import draw_results
+from .io import get_file
+from .segmentation import segmentation
+from .tracking import intermediate_tracking, preprocess_video
+from .config import config_suffix
 
 
 class ParameterSelector:
     methods_params = {'binary': {'threshold': [173, 0, 255]}}
 
-    def __init__(self, video_path=None, roi: Union[bool, list] = True, method='binary', params=None, interval=None,
-                 skip_gui=False):
-        if video_path is None:
-            video_path = ask_filename()
+    def __init__(self,
+                 video_path: Union[str, Path],
+                 roi: Union[bool, list] = True,
+                 method: str = 'binary',
+                 params: Optional[dict] = None,
+                 interval: Union[tuple, list, np.ndarray, None] = None,
+                 verbose: int = 0):
 
         self.video_path = str(video_path)
         self.method = method
@@ -27,14 +29,12 @@ class ParameterSelector:
         self.roi = roi
         self.interval = interval
         self.params = {param: default for param, (default, _, _) in self.methods_params[self.method].items()}
+        self.verbose = verbose
+
         if isinstance(params, dict):
             self.params.update(params)
 
-        if skip_gui:
-            self.save()
-            return
-
-        self.frames, self.roi = preprocess_video(video_path, roi, interval)
+        self.frames, self.roi = preprocess_video(video_path, roi, interval, verbose)
 
         cv2.namedWindow(self.window_name)
 
@@ -71,6 +71,8 @@ class ParameterSelector:
         with open(file, 'w') as f:
             json.dump(config, f)
 
+        print(f'Configuration saved to {file}')
+
     def create_track_bar_callback(self, track_bar_name):
         return lambda value: self.update_parameter(track_bar_name, value)
 
@@ -89,12 +91,3 @@ class ParameterSelector:
     def update(self):
         img = self.image_func(self.frames[self.frame_pos])
         cv2.imshow(self.window_name, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-
-
-if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('video_path', nargs='?', help="video path", default=None)
-    parser.add_argument('--roi', nargs='*', help="roi for cropping", default=True, type=int)
-    parser.add_argument('-m', '--method', help="tracking method", default='binary')
-    parser.add_argument('-i', '--interval', help="tracking method", default=None)
-    ParameterSelector(**(vars(parser.parse_args())))

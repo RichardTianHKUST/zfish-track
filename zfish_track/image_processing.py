@@ -3,7 +3,9 @@ import numpy as np
 from imageio import get_reader
 
 
-def read_video(path, as_gray):
+def read_video(path, as_gray, verbose=0):
+    if verbose:
+        print(f'Reading {path}')
     frames = np.array([i for i in get_reader(path)])
     if as_gray and len(frames.shape) == 4:
         return frames[..., 0]
