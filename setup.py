@@ -27,4 +27,9 @@ setup(
         'Intended Audience :: Science/Research',
     ],
     python_requires='>=3.7',
+    entry_points={
+        'console_scripts': [
+            'zfish-track = zfish_track.__main__:main',
+        ]
+    },
 )
