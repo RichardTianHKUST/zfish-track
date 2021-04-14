@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
+from itertools import chain
 from pathlib import Path
-from zfish_track.gui import ParameterSelector
-from zfish_track.io import ask_filenames, ask_directories
-
+from zfish_track._gui import ParameterSelector
+from zfish_track._io import ask_filenames, ask_directories
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -27,16 +27,22 @@ if __name__ == '__main__':
         else:
             args.input.extend(ask_filenames())
 
-    video_paths = []
+    kwargs = dict(method=args.method, roi=args.roi, interval=args.interval, verbose=args.verbose)
 
     for path in args.input:
         path = Path(path)
         if path.is_dir():
-            for extension in args.extension:
-                video_paths.extend(path.glob(('**/*' if args.recursive else '*') + extension))
+            glob = path.rglob if args.recursive else path.glob
+            it = chain(*[path.rglob(f'*{extension}') if args.recursive else path.glob(f'*{extension}')
+                         for extension in args.extension])
+
+            if args.same_config_for_each_directory:
+                config = ParameterSelector(next(it), **kwargs).get_config()
+                for video_path in it:
+                    config.save(video_path, verbose=args.verbose)
+            else:
+                for video_path in it:
+                    ParameterSelector(video_path, **kwargs)
         else:
             if path.exists():
-                video_paths.append(path)
-
-    for video_path in video_paths:
-        ParameterSelector(video_path, roi=args.roi, method=args.method, interval=args.interval, verbose=args.verbose)
+                ParameterSelector(path, **kwargs)

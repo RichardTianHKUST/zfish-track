@@ -1,40 +1,32 @@
 from pathlib import Path
 from typing import Union, Optional
-import json
 import cv2
 import numpy as np
-from .draw import draw_results
-from .io import get_file
-from .segmentation import segmentation
-from .tracking import intermediate_tracking, preprocess_video
-from .config import config_suffix
+from ._draw import draw_results
+from ._segmentation import segmentation
+from ._tracking import intermediate_tracking, preprocess_video
+from ._config import TrackingConfiguration
 
 
 class ParameterSelector:
     methods_params = {'binary': {'threshold': [173, 0, 255]}}
 
-    def __init__(self,
-                 video_path: Union[str, Path],
-                 roi: Union[bool, list] = True,
-                 method: str = 'binary',
-                 params: Optional[dict] = None,
-                 interval: Union[tuple, list, np.ndarray, None] = None,
+    def __init__(self, video_path: Union[str, Path], method: str = 'binary',
+                 roi: Union[bool, tuple, list, np.ndarray, None] = True,
+                 interval: Union[tuple, list, np.ndarray, None] = None, params: Optional[dict] = None,
                  verbose: int = 0):
-
-        self.video_path = str(video_path)
+        self.video_path = video_path
         self.method = method
-        self.frame_pos = 0
-        self.segmentation = segmentation
-        self.window_name = 'Press Enter to save parameters'
-        self.roi = roi
+        self.frames, self.roi = preprocess_video(video_path, roi, interval, verbose)
         self.interval = interval
-        self.params = {param: default for param, (default, _, _) in self.methods_params[self.method].items()}
-        self.verbose = verbose
+        self.params = {param: default for param, (default, _, _) in self.methods_params[method].items()}
 
         if isinstance(params, dict):
             self.params.update(params)
 
-        self.frames, self.roi = preprocess_video(video_path, roi, interval, verbose)
+        self.frame_pos = 0
+        self.segmentation = segmentation
+        self.window_name = 'Press Enter to save parameters'
 
         cv2.namedWindow(self.window_name)
 
@@ -42,7 +34,7 @@ class ParameterSelector:
         cv2.createTrackbar(frame_bar_name, self.window_name, 0, len(self.frames) - 1, self.update_frame_bar)
         cv2.setTrackbarPos(frame_bar_name, self.window_name, self.frame_pos)
 
-        for param, (_, low, high) in self.methods_params[self.method].items():
+        for param, (_, low, high) in self.methods_params[method].items():
             cv2.createTrackbar(param, self.window_name, low, high, self.create_track_bar_callback(param))
             cv2.setTrackbarPos(param, self.window_name, self.params[param])
 
@@ -58,20 +50,10 @@ class ParameterSelector:
         cv2.destroyAllWindows()
 
         if key == key_enter:
-            self.save()
+            self.get_config().save(verbose=verbose)
 
-    def save(self):
-        config = {'video_path': Path(self.video_path).absolute().as_posix(),
-                  'roi': self.roi, 'method': self.method, 'params': self.params, 'interval': self.interval}
-
-        file = get_file(self.video_path, '_' + str(tuple(self.interval)) + config_suffix) \
-            if isinstance(self.interval, (tuple, list, np.ndarray)) \
-            else get_file(self.video_path, config_suffix)
-
-        with open(file, 'w') as f:
-            json.dump(config, f)
-
-        print(f'Configuration saved to {file}')
+    def get_config(self):
+        return TrackingConfiguration(self.video_path, self.method, self.roi, self.interval, self.params)
 
     def create_track_bar_callback(self, track_bar_name):
         return lambda value: self.update_parameter(track_bar_name, value)

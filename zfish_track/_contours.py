@@ -1,7 +1,8 @@
 import warnings
 import cv2
 import numpy as np
-from .geometry import ccw_angle_between_vectors
+
+from ._geometry import ccw_angle_between_vectors
 
 
 def find_contours(img: np.ndarray):

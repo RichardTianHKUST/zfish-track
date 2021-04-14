@@ -43,7 +43,7 @@ def fit_ellipse(contour, use_convex_hull):
         contour = cv2.convexHull(contour)
 
     cnt = contour.reshape(-1, 2) * 1.
-    
+
     model = EllipseModel()
 
     try:

@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 from skimage.color import gray2rgb
 
-
 contour_colors = [(31, 119, 180),
                   (255, 127, 14),
                   (44, 160, 44)]
