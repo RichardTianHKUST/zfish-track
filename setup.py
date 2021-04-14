@@ -13,9 +13,12 @@ setuptools.setup(
     install_requires=[
         "imageio-ffmpeg",
         "numpy",
-        "opencv-python>4.5.1"
+        "opencv-python>4.5.1",
         "pandas",
+        "pywin32",
         "scikit-image",
+        "tkfilebrowser",
+        "tqdm",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
