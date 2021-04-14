@@ -3,7 +3,9 @@ import numpy as np
 from imageio import get_reader
 
 
-def read_video(path, as_gray):
+def read_video(path, as_gray, verbose=0):
+    if verbose:
+        print(f'Reading {path}')
     frames = np.array([i for i in get_reader(path)])
     if as_gray and len(frames.shape) == 4:
         return frames[..., 0]
@@ -23,10 +25,10 @@ def imcrop(img, roi=True, func=np.max):
         proj = func(img, axis=tuple(np.arange(len(img.shape))[:-2]))
         roi = cv2.selectROI(windowName=window_name, img=proj)
         cv2.destroyWindow(window_name)
+    elif roi is False:
+        roi = None
 
-    if not isinstance(roi, (tuple, list, np.ndarray)) or roi[2:] == (0, 0):
-        roi = (0, 0, img.shape[-1], img.shape[-2])
-
-    img = img[..., roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
+    if isinstance(roi, (tuple, list, np.ndarray)):
+        img = img[..., roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
 
     return img, roi

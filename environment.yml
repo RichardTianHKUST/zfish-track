@@ -1,8 +1,0 @@
-name: free-swim-eye-tracker
-channels:
-  - defaults
-dependencies:
-  - python=3.7
-  - scikit-image
-  - opencv=4.5.1
-  - pandas

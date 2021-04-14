@@ -1,5 +1,6 @@
 from pathlib import Path
 from tkinter import Tk, filedialog
+from tkfilebrowser import askopendirnames
 
 
 def create_root():
@@ -7,13 +8,6 @@ def create_root():
     root.attributes('-topmost', True)
     root.withdraw()
     return root
-
-
-def ask_filename():
-    root = create_root()
-    filename = filedialog.askopenfilename()
-    root.destroy()
-    return filename
 
 
 def ask_filenames():
@@ -28,6 +22,13 @@ def ask_directory():
     directory = filedialog.askdirectory()
     root.destroy()
     return directory
+
+
+def ask_directories():
+    root = create_root()
+    directories = askopendirnames()
+    root.destroy()
+    return directories
 
 
 def get_file(video_path, suffix):

@@ -1,14 +1,15 @@
+import warnings
 import cv2
 import numpy as np
-import warnings
-from .geometry import ccw_angle_between_vectors
+
+from ._geometry import ccw_angle_between_vectors
 
 
-def find_contours(img):
+def find_contours(img: np.ndarray):
     return cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
 
 
-def sort_contours(contours):
+def sort_contours(contours: list):
     largest3 = sorted(contours, key=cv2.contourArea)[-3:]
 
     try:

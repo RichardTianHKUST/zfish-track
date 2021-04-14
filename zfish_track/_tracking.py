@@ -1,16 +1,18 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from .geometry import calculate_angles, fit_ellipses, ellipse_points, correct_orientation
-from .image_processing import imcrop, read_video, white_on_black
-from .io import get_file
-from .segmentation import segmentation
-from .config import points_suffix, angles_suffix
-from .contours import find_contours, sort_contours
+from tqdm import tqdm
+
+from ._geometry import calculate_angles, fit_ellipses, ellipse_points, correct_orientation
+from ._image_processing import imcrop, read_video, white_on_black
+from ._io import get_file
+from ._segmentation import segmentation
+from ._config import points_suffix, angles_suffix
+from ._contours import find_contours, sort_contours
 
 
-def preprocess_video(video_path, roi, interval):
-    frames = white_on_black(read_video(video_path, as_gray=True))
+def preprocess_video(video_path, roi, interval, verbose=0):
+    frames = white_on_black(read_video(video_path, as_gray=True, verbose=verbose))
     try:
         interval = (0 if interval[0] is None else interval[0], len(frames) if interval[1] is None else interval[1])
     except TypeError:
@@ -30,9 +32,14 @@ def intermediate_tracking(img, method, params):
     return sorted_contours, eye_points
 
 
-def track_video(video_path, roi, method, params, interval=None):
-    frames, roi, interval = preprocess_video(video_path, roi=roi, interval=interval)
-    eye_points = np.array([intermediate_tracking(frame, method, params)[1] for frame in frames]) + roi[:2]
+def track_video(video_path, roi, method, params, interval=None, verbose=0):
+    frames, roi = preprocess_video(video_path, roi=roi, interval=interval, verbose=verbose)
+
+    if interval is None:
+        interval = (0, len(frames))
+
+    eye_points = np.array([intermediate_tracking(frame, method, params)[1]
+                           for frame in (tqdm(frames) if verbose else frames)]) + roi[:2]
     columns = pd.MultiIndex.from_product([['anterior', 'center', 'posterior'],
                                           ['left_eye', 'right_eye', 'swim_bladder'],
                                           ['x', 'y']])
