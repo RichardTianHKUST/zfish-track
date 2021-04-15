@@ -1,14 +1,24 @@
 import cv2
 import numpy as np
-from imageio import get_reader
+from tqdm import tqdm
 
 
 def read_video(path, as_gray, verbose=0):
     if verbose:
         print(f'Reading {path}')
-    frames = np.array([i for i in get_reader(path)])
-    if as_gray and len(frames.shape) == 4:
-        return frames[..., 0]
+
+    cap = cv2.VideoCapture(str(path))
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    range_ = tqdm(range(frame_count)) if verbose else range(frame_count)
+
+    if as_gray:
+        frames = np.array([cv2.cvtColor(cap.read()[1], cv2.COLOR_BGR2GRAY) for _ in range_])
+    else:
+        frames = np.array([cap.read()[1] for _ in range_])
+
+    cap.release()
+
     return frames
 
 
