@@ -18,7 +18,7 @@ def preprocess_video(video_path, roi, interval, verbose=0):
     except TypeError:
         interval = (0, len(frames))
     frames = frames[interval[0]:interval[1]]
-    frames, roi = imcrop(frames, roi)
+    frames, roi = imcrop(frames, roi, verbose=verbose)
     return frames, roi
 
 

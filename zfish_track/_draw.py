@@ -19,7 +19,10 @@ def draw_results(src, contours=None, eye_points=None, contour_thickness=-1):
 
     if eye_points is not None:
         anterior, center, posterior = np.array(eye_points).astype(int)
-        for c, a in zip(center, anterior):
-            cv2.line(img, tuple(c), tuple((a - c) * 2 + c), (0, 255, 255), 1)
+        for i, (c, a) in enumerate(zip(center, anterior)):
+            if i == 2:
+                cv2.line(img, tuple(c), tuple((center[0] + center[1]) // 2), (0, 255, 255), 1)
+            else:
+                cv2.line(img, tuple(c), tuple((a - c) * 2 + c), (0, 255, 255), 1)
 
     return img

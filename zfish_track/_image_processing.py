@@ -19,12 +19,14 @@ def white_on_black(img):
     return img
 
 
-def imcrop(img, roi=True, func=np.max):
+def imcrop(img, roi=True, func=np.max, verbose=0):
     if roi is True:
         window_name = 'Select ROI'
         proj = func(img, axis=tuple(np.arange(len(img.shape))[:-2]))
         roi = cv2.selectROI(windowName=window_name, img=proj)
         cv2.destroyWindow(window_name)
+        if verbose:
+            print(f'Selected ROI: {roi}')
     elif roi is False:
         roi = None
 
