@@ -8,7 +8,7 @@ def main():
     subparsers = parser.add_subparsers(dest='command')
     subparsers.required = True
 
-    create_config_parser = subparsers.add_parser('create-config')
+    create_config_parser = subparsers.add_parser('create-config', help="Create tracking configuration")
     create_config_parser.add_argument('input', nargs='*', default=None,
                                       help="Paths to videos or directories containing videos.")
     create_config_parser.add_argument('-d', '--directory', action='store_true',
@@ -32,7 +32,7 @@ def main():
     create_config_parser.add_argument('-v', '--verbose', type=int, default=0,
                                       help="Verbosity.")
 
-    run_tracking_parser = subparsers.add_parser('run')
+    run_tracking_parser = subparsers.add_parser('run', help="Run tracking on tracking configurations.")
     run_tracking_parser.add_argument('input', nargs='*', default=None,
                                      help="Paths to tracking configurations or directories containing configurations.")
     run_tracking_parser.add_argument('-d', '--directory', action='store_true',
